@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DerivHack Volatility Analyzer Pro</title>
+
+<style>
+
+/* =========================================================
+   QUANTUM VOLATILITY ANALYZER PRO
+   FULL UPDATED VERSION
+   - Persistent balances
+   - 2 Wins then 1 Loss cycle
+   - Stable account profits
+========================================================= */
+
+:root{
+    --bg:#0b1020;
+    --card:#151d35;
+    --card2:#1b2647;
+    --accent:#ff444f;
+    --green:#00ff9d;
+    --blue:#45a2ff;
+    --yellow:#ffd93d;
+    --red:#ff5f5f;
+    --grey:#2f3b63;
+    --text:#f4f7ff;
+    --muted:#9ca7c7;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,Segoe UI,sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#050816,#0e1324,#111933);
+    color:var(--text);
+    overflow-x:hidden;
+    min-height:100vh;
+}
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+
+.particles{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    z-index:-1;
+}
+
+.particles span{
+    position:absolute;
+    width:4px;
+    height:4px;
+    border-radius:50%;
+    background:rgba(255,255,255,.5);
+    animation:float 15s linear infinite;
+}
+
+@keyframes float{
+    from{
+        transform:translateY(100vh) scale(0);
+        opacity:0;
+    }
+    20%{
+        opacity:1;
+    }
+    to{
+        transform:translateY(-10vh) scale(1.5);
+        opacity:0;
+    }
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+#loginPage{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.login-card{
+    width:100%;
+    max-width:420px;
+    background:rgba(21,29,53,.96);
+    border-radius:25px;
+    padding:35px;
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 0 40px rgba(0,0,0,.5);
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.logo-circle{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    margin:auto;
+    background:linear-gradient(45deg,var(--accent),#ff9900);
+    box-shadow:0 0 35px var(--accent);
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    50%{
+        transform:scale(1.08);
+    }
+}
+
+.logo h1{
+    margin-top:18px;
+    font-size:28px;
+}
+
+.logo p{
+    color:var(--muted);
+    margin-top:8px;
+}
+
+.input-group{
+    margin-bottom:18px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:8px;
+    color:var(--muted);
+}
+
+.input-group input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    background:#0c1327;
+    color:white;
+    outline:none;
+}
+
+.checkbox{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+    align-items:center;
+}
+
+.btn{
+    width:100%;
+    border:none;
+    padding:15px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:800;
+    margin-top:10px;
+}
+
+.primary{
+    background:linear-gradient(45deg,var(--accent),#ff7f50);
+    color:white;
+}
+
+.secondary{
+    background:#242f52;
+    color:white;
+}
+
+.error{
+    margin-top:15px;
+    text-align:center;
+    color:#ff6666;
+    display:none;
+}
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+#dashboard{
+    display:none;
+    min-height:100vh;
+}
+
+.navbar{
+    position:sticky;
+    top:0;
+    z-index:100;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    background:rgba(8,12,25,.96);
+    backdrop-filter:blur(12px);
+}
+
+.nav-left,.nav-right{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.menu-btn{
+    font-size:24px;
+    cursor:pointer;
+}
+
+.balance-box{
+    background:var(--card);
+    padding:10px 16px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.toggle{
+    display:flex;
+    background:#1d2745;
+    border-radius:30px;
+    overflow:hidden;
+}
+
+.toggle button{
+    border:none;
+    background:transparent;
+    color:white;
+    padding:8px 15px;
+    cursor:pointer;
+}
+
+.toggle .active{
+    background:var(--accent);
+}
+
+.main{
+    padding:20px;
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.status-card{
+    background:var(--card);
+    border-radius:16px;
+    padding:16px;
+}
+
+.live{
+    color:var(--green);
+    animation:blink 1s infinite;
+}
+
+@keyframes blink{
+    50%{
+        opacity:.5;
+    }
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar{
+    position:fixed;
+    top:0;
+    left:-320px;
+    width:320px;
+    height:100%;
+    background:#10172d;
+    z-index:999;
+    padding:20px;
+    transition:.4s;
+    overflow-y:auto;
+}
+
+.sidebar.active{
+    left:0;
+}
+
+.side-card{
+    background:var(--card2);
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:18px;
+}
+
+.side-input{
+    width:100%;
+    margin-top:10px;
+    padding:13px;
+    border:none;
+    border-radius:12px;
+    background:#0c1327;
+    color:white;
+}
+
+.side-btn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    margin-top:12px;
+    font-weight:bold;
+}
+
+.copy-btn{
+    background:var(--green);
+    color:black;
+}
+
+.withdraw-btn{
+    background:var(--accent);
+    color:white;
+}
+
+.support-btn{
+    background:#45a2ff;
+    color:white;
+}
+
+.logout-btn{
+    background:#ff3d3d;
+    color:white;
+}
+
+/* =========================================================
+   TABS
+========================================================= */
+
+.tabs{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    margin-bottom:25px;
+}
+
+.tabs::-webkit-scrollbar{
+    display:none;
+}
+
+.tab{
+    min-width:max-content;
+    padding:12px 18px;
+    border-radius:14px;
+    background:#1a2444;
+    cursor:pointer;
+}
+
+.tab.active{
+    background:linear-gradient(45deg,var(--accent),#ff7f50);
+}
+
+/* =========================================================
+   DIGITS
+========================================================= */
+
+.analysis-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
+    gap:16px;
+}
+
+.digit-card{
+    aspect-ratio:1;
+    border-radius:50%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    animation:floatCard 3s ease-in-out infinite;
+}
+
+@keyframes floatCard{
+    50%{
+        transform:translateY(-5px);
+    }
+}
+
+.digit{
+    font-size:30px;
+    font-weight:bold;
+}
+
+.percent{
+    margin-top:5px;
+    font-size:14px;
+}
+
+.green{
+    background:rgba(0,255,157,.1);
+    border:2px solid var(--green);
+    box-shadow:0 0 25px rgba(0,255,157,.5);
+}
+
+.blue{
+    background:rgba(69,162,255,.1);
+    border:2px solid var(--blue);
+    box-shadow:0 0 25px rgba(69,162,255,.5);
+}
+
+.yellow{
+    background:rgba(255,217,61,.1);
+    border:2px solid var(--yellow);
+    box-shadow:0 0 25px rgba(255,217,61,.5);
+}
+
+.red{
+    background:rgba(255,95,95,.1);
+    border:2px solid var(--red);
+    box-shadow:0 0 25px rgba(255,95,95,.5);
+}
+
+.grey{
+    background:rgba(255,255,255,.04);
+    border:2px solid #3a456b;
+}
+
+/* =========================================================
+   ANALYZE
+========================================================= */
+
+.analyze-section{
+    margin:25px 0;
+}
+
+.analyze-btn{
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:18px;
+    background:linear-gradient(45deg,#00c6ff,#0072ff);
+    color:white;
+    font-size:18px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.prediction-box{
+    margin-top:18px;
+    background:var(--card);
+    border-radius:18px;
+    padding:20px;
+    text-align:center;
+    display:none;
+}
+
+/* =========================================================
+   BOT
+========================================================= */
+
+.bot-card{
+    background:var(--card);
+    border-radius:24px;
+    padding:22px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+}
+
+.form-grid input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    background:#0c1327;
+    color:white;
+}
+
+.bot-actions{
+    display:flex;
+    gap:12px;
+    margin-top:18px;
+}
+
+.bot-actions button{
+    flex:1;
+    border:none;
+    padding:15px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.run-btn{
+    background:linear-gradient(45deg,var(--green),#00c27c);
+}
+
+.reset-btn{
+    background:#2b3555;
+    color:white;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrap{
+    overflow-x:auto;
+    margin-top:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:700px;
+}
+
+th,td{
+    padding:14px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    text-align:left;
+}
+
+th{
+    background:#1a2444;
+}
+
+.win{
+    color:var(--green);
+    font-weight:bold;
+}
+
+.loss{
+    color:var(--red);
+    font-weight:bold;
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#10192f;
+    padding:15px 18px;
+    border-left:4px solid var(--accent);
+    border-radius:14px;
+    transform:translateX(400px);
+    transition:.4s;
+    z-index:9999;
+}
+
+.toast.show{
+    transform:translateX(0);
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:768px){
+
+    .navbar{
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    .bot-actions{
+        flex-direction:column;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="particles" id="particles"></div>
+
+<!-- LOGIN -->
+<section id="loginPage">
+
+<div class="login-card">
+
+<div class="logo">
+<div class="logo-circle"></div>
+
+<h1>DerivHack Volatility Analyzer Pro</h1>
+
+<p>Advanced Deriv Volatility Analysis</p>
+</div>
+
+<div class="input-group">
+<label>Username</label>
+<input type="text" id="username">
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input type="password" id="password">
+</div>
+
+<div class="checkbox">
+<input type="checkbox" id="terms">
+<label>Agree to Terms & Conditions</label>
+</div>
+
+<button class="btn primary" id="loginBtn">
+LOGIN
+</button>
+
+<button class="btn secondary" id="getLoginsBtn">
+GET LOGINS
+</button>
+
+<div class="error" id="errorMsg">
+Invalid credentials or Terms not accepted
+</div>
+
+</div>
+
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+
+<h2 style="margin-bottom:20px">Menu</h2>
+
+<div class="side-card">
+
+<h3>Deposit</h3>
+
+<p style="word-break:break-all">
+TJ3xrDQSrvY4k6tSSxz9rkNArL1YsqgmrC
+</p>
+
+<button class="side-btn copy-btn" id="copyBtn">
+Copy Address
+</button>
+
+</div>
+
+<div class="side-card">
+
+<h3>Withdraw</h3>
+
+<input class="side-input"
+id="walletAddress"
+placeholder="Wallet Address">
+
+<input class="side-input"
+id="withdrawAmount"
+placeholder="Amount">
+
+<button class="side-btn withdraw-btn"
+id="withdrawBtn">
+
+Execute Withdrawal
+</button>
+
+<script>
+function withdraw(){
+  // your withdrawal logic here
+}
+</script>
+
+</div>
+
+<div class="side-card">
+
+<h3>Portfolio</h3>
+
+<div id="withdrawHistory">
+No withdrawals yet
+</div>
+
+</div>
+
+<div class="side-card">
+
+<h3>Support</h3>
+
+<button class="side-btn support-btn"
+onclick="window.open('https://wa.me/254740491902','_blank')">
+Contact Support
+</button>
+
+</div>
+
+<button class="side-btn logout-btn"
+id="logoutBtn">
+Logout
+</button>
+
+</aside>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+
+<div class="nav-left">
+<div class="menu-btn" id="menuBtn">☰</div>
+<h2>DerivHack Analyzer</h2>
+</div>
+
+<div class="nav-right">
+
+<div class="balance-box">
+<img src="https://flagcdn.com/us.svg" 
+     style="width:20px;height:20px;border-radius:50%;object-fit:cover;">
+<span id="accountType">REAL</span>
+<strong id="balance">$0.00</strong>
+</div>
+
+<div class="toggle">
+
+<button class="active"
+id="realBtn">
+REAL
+</button>
+
+<button id="demoBtn">
+DEMO
+</button>
+
+</div>
+
+</div>
+
+</nav>
+
+<div class="main">
+
+<div class="status-grid">
+
+<div class="status-card">
+<small>Status</small>
+<h3 class="live">LIVE MARKET</h3>
+</div>
+
+<div class="status-card">
+<small>Time</small>
+<h3 id="clock"></h3>
+</div>
+
+<div class="status-card">
+<small>Volatility</small>
+<h3 id="currentVol">
+Volatility 10
+</h3>
+</div>
+
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="analysis-grid"
+id="digitGrid"></div>
+
+<div class="analyze-section">
+
+<button class="analyze-btn"
+id="analyzeBtn">
+ANALYZE MARKET
+</button>
+
+<div class="prediction-box"
+id="predictionBox">
+
+<h2>Strongest Prediction</h2>
+
+<h1 id="predictionResult"></h1>
+
+</div>
+
+</div>
+
+<div class="bot-card">
+
+<h2 style="margin-bottom:18px">
+Matches Speed Bot
+</h2>
+
+<div class="form-grid">
+
+<input type="number"
+id="stake"
+placeholder="Stake">
+
+<input type="number"
+id="takeProfit"
+placeholder="Take Profit">
+
+<input type="number"
+id="stopLoss"
+placeholder="Stop Loss">
+
+<input type="number"
+id="martingale"
+placeholder="Martingale">
+
+<input type="number"
+id="prediction"
+placeholder="Prediction">
+
+</div>
+
+<div class="bot-actions">
+
+<button class="run-btn"
+id="runBot">
+RUN
+</button>
+
+<button class="reset-btn"
+id="resetHistory">
+RESET HISTORY
+</button>
+
+</div>
+
+<div style="margin-top:15px"
+id="botStatus"></div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Time</th>
+<th>Volatility</th>
+<th>Prediction</th>
+<th>Stake</th>
+<th>Result</th>
+</tr>
+
+</thead>
+
+<tbody id="historyTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+
+const particles =
+document.getElementById("particles");
+
+for(let i=0;i<90;i++){
+
+const span =
+document.createElement("span");
+
+span.style.left =
+Math.random()*100 + "%";
+
+span.style.animationDuration =
+(Math.random()*10+10)+"s";
+
+particles.appendChild(span);
+
+}
+
+/* =========================================================
+   PERSISTENT BALANCES
+========================================================= */
+
+let realBalance =
+Number(localStorage.getItem("realBalance")) || 0.00;
+
+let demoBalance =
+Number(localStorage.getItem("demoBalance")) || 10000;
+
+let currentAccount = "REAL";
+
+function saveBalances(){
+
+localStorage.setItem(
+"realBalance",
+realBalance
+);
+
+localStorage.setItem(
+"demoBalance",
+demoBalance
+);
+
+}
+
+function updateBalanceUI(){
+
+if(currentAccount==="REAL"){
+
+document.getElementById("balance")
+.innerText =
+"$" + realBalance.toLocaleString(
+undefined,
+{
+minimumFractionDigits:2
+}
+);
+
+}else{
+
+document.getElementById("balance")
+.innerText =
+"$" + demoBalance.toLocaleString(
+undefined,
+{
+minimumFractionDigits:2
+}
+);
+
+}
+
+}
+
+/* =========================================================
+   SESSION
+========================================================= */
+
+const loginPage =
+document.getElementById("loginPage");
+
+const dashboard =
+document.getElementById("dashboard");
+
+function checkSession(){
+
+if(localStorage.getItem("qvap_session")==="active"){
+
+loginPage.style.display="none";
+dashboard.style.display="block";
+
+updateBalanceUI();
+
+}
+
+}
+
+checkSession();
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+document.getElementById("loginBtn")
+.onclick=()=>{
+
+const user =
+document.getElementById("username").value;
+
+const pass =
+document.getElementById("password").value;
+
+const terms =
+document.getElementById("terms").checked;
+
+if(
+user==="User256" &&
+pass==="Aqua@2./" &&
+terms
+){
+
+localStorage.setItem(
+"qvap_session",
+"active"
+);
+
+loginPage.style.display="none";
+dashboard.style.display="block";
+
+updateBalanceUI();
+
+toast("Login successful");
+
+}else{
+
+const error =
+document.getElementById("errorMsg");
+
+error.style.display="block";
+
+setTimeout(()=>{
+
+error.style.display="none";
+
+},3000);
+
+}
+
+};
+
+document.getElementById("getLoginsBtn")
+.onclick=()=>{
+
+window.open(
+"https://wa.me/254740491902",
+"_blank"
+);
+
+};
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+const sidebar =
+document.getElementById("sidebar");
+
+document.getElementById("menuBtn")
+.onclick=(e)=>{
+
+e.stopPropagation();
+
+sidebar.classList.toggle("active");
+
+};
+
+document.addEventListener("click",(e)=>{
+
+if(
+sidebar.classList.contains("active") &&
+!sidebar.contains(e.target) &&
+!document.getElementById("menuBtn")
+.contains(e.target)
+){
+
+sidebar.classList.remove("active");
+
+}
+
+});
+
+/* =========================================================
+   ACCOUNT TOGGLE
+========================================================= */
+
+document.getElementById("realBtn")
+.onclick=()=>{
+
+currentAccount = "REAL";
+
+document.getElementById("accountType")
+.innerText="REAL";
+
+document.getElementById("realBtn")
+.classList.add("active");
+
+document.getElementById("demoBtn")
+.classList.remove("active");
+
+updateBalanceUI();
+
+};
+
+document.getElementById("demoBtn")
+.onclick=()=>{
+
+currentAccount = "DEMO";
+
+document.getElementById("accountType")
+.innerText="DEMO";
+
+document.getElementById("demoBtn")
+.classList.add("active");
+
+document.getElementById("realBtn")
+.classList.remove("active");
+
+updateBalanceUI();
+
+};
+
+/* =========================================================
+   VOLATILITY TABS
+========================================================= */
+
+const volatilities = [
+
+"Volatility 10",
+"Volatility 25",
+"Volatility 50",
+"Volatility 75",
+"Volatility 100",
+"Volatility 10 (1s)",
+"Volatility 25 (1s)",
+"Volatility 50 (1s)",
+"Volatility 75 (1s)",
+"Volatility 100 (1s)"
+
+];
+
+let currentVolatility =
+"Volatility 10";
+
+const tabs =
+document.getElementById("tabs");
+
+volatilities.forEach((vol,index)=>{
+
+const tab =
+document.createElement("div");
+
+tab.className="tab";
+
+if(index===0){
+
+tab.classList.add("active");
+
+}
+
+tab.innerText=vol;
+
+tab.onclick=()=>{
+
+document.querySelectorAll(".tab")
+.forEach(t=>{
+
+t.classList.remove("active");
+
+});
+
+tab.classList.add("active");
+
+currentVolatility = vol;
+
+document.getElementById("currentVol")
+.innerText = vol;
+
+generateDigits();
+
+};
+
+tabs.appendChild(tab);
+
+});
+
+/* =========================================================
+   STABLE DIGITS
+========================================================= */
+
+const digitGrid =
+document.getElementById("digitGrid");
+
+let digitPercentages = [
+12,10,8,14,7,9,13,6,11,10
+];
+
+function updatePercentages(){
+
+digitPercentages =
+digitPercentages.map(v=>{
+
+let change =
+(Math.random()*2)-1;
+
+let newVal = v + change;
+
+if(newVal < 4) newVal = 4;
+if(newVal > 18) newVal = 18;
+
+return newVal;
+
+});
+
+let total =
+digitPercentages.reduce((a,b)=>a+b,0);
+
+digitPercentages =
+digitPercentages.map(v=>
+(v/total)*100
+);
+
+}
+
+function renderDigits(){
+
+digitGrid.innerHTML="";
+
+const sorted =
+[...digitPercentages]
+.sort((a,b)=>b-a);
+
+const highest = sorted[0];
+const secondHighest = sorted[1];
+const lowest = sorted[9];
+const secondLowest = sorted[8];
+
+digitPercentages.forEach((value,index)=>{
+
+const card =
+document.createElement("div");
+
+card.classList.add("digit-card");
+
+if(value===highest){
+
+card.classList.add("green");
+
+}else if(value===secondHighest){
+
+card.classList.add("blue");
+
+}else if(value===lowest){
+
+card.classList.add("red");
+
+}else if(value===secondLowest){
+
+card.classList.add("yellow");
+
+}else{
+
+card.classList.add("grey");
+
+}
+
+card.innerHTML=`
+<div class="digit">${index}</div>
+<div class="percent">
+${value.toFixed(1)}%
+</div>
+`;
+
+digitGrid.appendChild(card);
+
+});
+
+}
+
+function generateDigits(){
+
+updatePercentages();
+renderDigits();
+
+}
+
+generateDigits();
+
+setInterval(generateDigits,1000);
+
+/* =========================================================
+   ANALYZE
+========================================================= */
+
+document.getElementById("analyzeBtn")
+.onclick=function(){
+
+const btn=this;
+
+btn.disabled=true;
+
+btn.innerText=
+"Analyzing AI Market...";
+
+setTimeout(()=>{
+
+let highest =
+Math.max(...digitPercentages);
+
+let prediction =
+digitPercentages.indexOf(highest);
+
+document.getElementById(
+"predictionBox"
+).style.display="block";
+
+document.getElementById(
+"predictionResult"
+).innerText=
+"Digit " + prediction;
+
+document.getElementById(
+"prediction"
+).value=prediction;
+
+btn.disabled=false;
+
+btn.innerText=
+"ANALYZE MARKET";
+
+toast("Prediction generated");
+
+},5000);
+
+};
+
+/* =========================================================
+   BOT LOGIC
+   2 WINS THEN 1 LOSS
+========================================================= */
+
+let tradeCycle =
+Number(localStorage.getItem("tradeCycle")) || 0;
+
+const historyTable =
+document.getElementById("historyTable");
+
+document.getElementById("runBot")
+.onclick=()=>{
+
+const stake =
+Number(document.getElementById("stake").value);
+
+const prediction =
+document.getElementById("prediction").value;
+
+const tp =
+document.getElementById("takeProfit").value;
+
+const sl =
+document.getElementById("stopLoss").value;
+
+const mg =
+document.getElementById("martingale").value;
+
+if(
+!stake ||
+!prediction ||
+!tp ||
+!sl ||
+!mg
+){
+
+toast("Complete all fields");
+
+return;
+
+}
+
+document.getElementById("botStatus")
+.innerHTML=`
+<span style="color:#ffd93d">
+Analyzing entry...
+</span>
+`;
+
+setTimeout(()=>{
+
+tradeCycle++;
+
+localStorage.setItem(
+"tradeCycle",
+tradeCycle
+);
+
+/* 2 WINS THEN 1 LOSS */
+
+const isLoss =
+tradeCycle % 3 === 0;
+
+let resultText = "";
+let resultClass = "";
+let amount = 0;
+
+if(isLoss){
+
+amount = stake;
+
+if(currentAccount==="REAL"){
+
+realBalance -= amount;
+
+}else{
+
+demoBalance -= amount;
+
+}
+
+resultText = "LOSS -$" + amount;
+resultClass = "loss";
+
+document.getElementById("botStatus")
+.innerHTML=`
+<span style="
+color:var(--red);
+font-weight:bold
+">
+LOSS -$${amount}
+</span>
+`;
+
+toast("Trade lost: -$" + amount);
+
+}else{
+
+amount = stake * 6;
+
+if(currentAccount==="REAL"){
+
+realBalance += amount;
+
+}else{
+
+demoBalance += amount;
+
+}
+
+resultText = "WON +$" + amount;
+resultClass = "win";
+
+document.getElementById("botStatus")
+.innerHTML=`
+<span style="
+color:var(--green);
+font-weight:bold
+">
+WON +$${amount}
+</span>
+`;
+
+toast("Trade won: +$" + amount);
+
+}
+
+saveBalances();
+updateBalanceUI();
+
+const row =
+document.createElement("tr");
+
+row.innerHTML=`
+<td>
+${new Date().toLocaleTimeString()}
+</td>
+
+<td>
+${currentVolatility}
+</td>
+
+<td>
+${prediction}
+</td>
+
+<td>
+$${stake}
+</td>
+
+<td class="${resultClass}">
+${resultText}
+</td>
+`;
+
+historyTable.prepend(row);
+
+},3000);
+
+};
+
+/* =========================================================
+   RESET HISTORY
+========================================================= */
+
+document.getElementById("resetHistory")
+.onclick=()=>{
+
+historyTable.innerHTML="";
+
+toast("History cleared");
+
+};
+
+/* =========================================================
+   COPY ADDRESS
+========================================================= */
+
+document.getElementById("copyBtn")
+.onclick=()=>{
+
+navigator.clipboard.writeText(
+"TJ3xrDQSrvY4k6tSSxz9rkNArL1YsqgmrC"
+);
+
+toast("TRC20 address copied");
+
+};
+
+/* =========================================================
+   WITHDRAW
+========================================================= */
+
+document.getElementById("withdrawBtn")
+.onclick=()=>{
+
+const wallet =
+document.getElementById(
+"walletAddress"
+).value;
+
+const amount =
+document.getElementById(
+"withdrawAmount"
+).value;
+
+if(!wallet || !amount){
+
+toast("Fill all withdrawal fields");
+
+return;
+
+}
+
+const history =
+document.getElementById(
+"withdrawHistory"
+);
+
+const item =
+document.createElement("div");
+
+item.style.marginTop="10px";
+
+item.innerHTML=`
+<div style="
+background:#0c1327;
+padding:12px;
+border-radius:12px;
+">
+<strong>$${amount}</strong><br>
+<small>PENDING</small>
+</div>
+`;
+
+history.prepend(item);
+
+toast("Withdrawal request pending");
+
+};
+
+/* =========================================================
+   CLOCK
+========================================================= */
+
+function updateClock(){
+
+document.getElementById("clock")
+.innerText =
+new Date().toLocaleString();
+
+}
+
+updateClock();
+
+setInterval(updateClock,1000);
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function toast(message){
+
+const toast =
+document.getElementById("toast");
+
+toast.innerText=message;
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+
+toast.classList.remove("show");
+
+},3000);
+
+}
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+document.getElementById("logoutBtn")
+.onclick=()=>{
+
+localStorage.removeItem(
+"qvap_session"
+);
+
+location.reload();
+
+};
+
+</script>
+
+</body>
+</html>
