@@ -1364,6 +1364,25 @@ return;
 
 }
 
+/* BLOCK REAL ACCOUNT TRADING IF BALANCE IS ZERO */
+
+if(currentAccount === "REAL" && realBalance <= 0){
+
+toast("Insuficient funds.");
+
+document.getElementById("botStatus")
+.innerHTML=`
+<span style="
+color:var(--red);
+font-weight:bold
+">
+REAL ACCOUNT BALANCE IS $0.00
+</span>
+`;
+
+return;
+
+}
 document.getElementById("botStatus")
 .innerHTML=`
 <span style="color:#ffd93d">
@@ -1524,9 +1543,9 @@ document.getElementById(
 ).value;
 
 const amount =
-document.getElementById(
+Number(document.getElementById(
 "withdrawAmount"
-).value;
+).value);
 
 if(!wallet || !amount){
 
@@ -1535,6 +1554,23 @@ toast("Fill all withdrawal fields");
 return;
 
 }
+
+/* WITHDRAWALS CAN ONLY COME FROM REAL ACCOUNT */
+
+if(amount > realBalance){
+
+toast("Insufficient balance");
+
+return;
+
+}
+
+/* DEDUCT WITHDRAWN FUNDS */
+
+realBalance -= amount;
+
+saveBalances();
+updateBalanceUI();
 
 const history =
 document.getElementById(
