@@ -1016,23 +1016,23 @@ document.getElementById("terms").checked;
 const accounts = [
 
 {
-username:"User271",
-password:".Deck@/"
+username:"User567",
+password:".DEEP@/"
 },
 
 {
-username:"User281",
-password:".Pass.@1"
+username:"User781",
+password:".PasS.@1"
 },
 
 {
-username:"User301",
-password:".Blend@,/"
+username:"User398",
+password:".BLACK@,/"
 },
 
 {
-username:"User301",
-password:"Blend@781/"
+username:"User999",
+password:"BLARE@7,/"
 }
 
 ];
@@ -1912,7 +1912,25 @@ localStorage.removeItem(
 location.reload();
 
 };
+window.addEventListener("beforeunload", () => {
 
+localStorage.removeItem("qvap_session");
+
+});
+
+document.addEventListener(
+"visibilitychange",
+() => {
+
+if(document.hidden){
+
+localStorage.removeItem(
+"qvap_session"
+);
+
+}
+
+});
 </script>
 
 <!-- ABOUT POPUP START -->
