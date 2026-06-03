@@ -1114,6 +1114,18 @@ updateBalanceUI();
 },50);
 
 }
+const navEntries = performance.getEntriesByType("navigation");
+
+if(
+navEntries.length &&
+navEntries[0].type === "reload"
+){
+
+localStorage.removeItem(
+"qvap_session"
+);
+
+}
 function checkSession(){
 
 if(localStorage.getItem("qvap_session")==="active"){
@@ -1148,7 +1160,7 @@ const accounts = [
 
 {
 username:"User567",
-password:".DEEP@/"
+password:".DEeP@/"
 },
 
 {
@@ -1158,12 +1170,12 @@ password:".PasS.@1"
 
 {
 username:"User398",
-password:".BLACK@,/"
+password:".BlACK@,/"
 },
 
 {
 username:"User999",
-password:"BLARE@7,/"
+password:"@BLARe7,/"
 }
 
 ];
@@ -2090,6 +2102,18 @@ localStorage.removeItem(
 );
 
 }
+
+});
+
+/* =========================================================
+   AUTO LOGOUT ON PAGE RELOAD
+========================================================= */
+
+window.addEventListener("beforeunload", () => {
+
+localStorage.removeItem(
+"qvap_session"
+);
 
 });
    
